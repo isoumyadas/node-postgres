@@ -1,0 +1,10 @@
+node_modules
+dist
+/src/generated/prisma
+
+/src/generated/prisma
+
+/generated/prisma
+
+.env
+/src/generated/prisma
