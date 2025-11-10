@@ -3,14 +3,14 @@ import express, { Request, Response } from "express";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient, Prisma } from "../generated/prisma/client";
 const prisma = new PrismaClient();
 
 // Todo: todo Controller
 
 const createTodo = async (req: Request, res: Response) => {
   try {
-    const { title, done, description, userId } = req.body;
+    const { title, done, description } = req.body;
 
     if ([title, description].some((field) => field.trim() === "")) {
       throw new Error("All fields are required!");
@@ -21,7 +21,7 @@ const createTodo = async (req: Request, res: Response) => {
         title,
         done,
         description,
-        userId,
+        userId: req.user?.id!,
       },
     });
 
@@ -36,9 +36,6 @@ const createTodo = async (req: Request, res: Response) => {
 const updateTodo = async (req: Request, res: Response) => {
   try {
     const { title, done, description, id } = req.body;
-    if ([title, description].some((fiedl) => fiedl.trim() === "")) {
-      throw new Error("All fields are required!");
-    }
 
     const data = await prisma.todo.update({
       where: { id },
@@ -59,20 +56,21 @@ const updateTodo = async (req: Request, res: Response) => {
 
 const getAllTodos = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.body;
+    // const { userId } = req.body;
 
     const data = await prisma.todo.findMany({
-      where: { userId: userId },
+      where: { userId: req.user?.id! },
       select: {
         title: true,
         description: true,
+        done: true,
         id: true,
       },
     });
 
     console.log("Todos: ", data);
 
-    return res.status(200).json(data);
+    return res.status(200).json({ userId: req.user?.id, todos: data });
   } catch (error: any) {
     throw new Error(error);
   }

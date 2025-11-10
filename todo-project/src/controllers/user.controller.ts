@@ -1,10 +1,9 @@
 import express, { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 import { PrismaClient } from "../generated/prisma/client";
 const prisma = new PrismaClient();
-
-// import * as dotenv from "dotenv";
-// dotenv.config();
 
 // TODO: User controller
 
@@ -16,10 +15,21 @@ const createUserAccount = async (req: Request, res: Response) => {
       throw new Error("All fields are required!");
     }
 
+    const existedUser = await prisma.user.findFirst({
+      where: { email },
+    });
+
+    console.log("existedUser:: ", existedUser);
+
+    if (existedUser) return "Email already exist! try another one or login ";
+
+    // password hashing
+    const hashedPass = await bcrypt.hash(password, 10);
+
     const data = await prisma.user.create({
       data: {
         email,
-        password,
+        password: hashedPass,
         username,
       },
       select: {
@@ -29,9 +39,11 @@ const createUserAccount = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("User Created Successfully", data);
+    console.log("User Created Successfully, Please Login", data);
 
-    return res.status(201).json(data);
+    return res
+      .status(201)
+      .json({ message: "User Created Successfully, Please Login", data });
   } catch (error: any) {
     throw new Error(error);
   }
@@ -45,17 +57,37 @@ const loginCurrentUser = async (req: Request, res: Response) => {
       throw new Error("All fields are required!");
     }
 
-    // Need to check password...
-
     const data = await prisma.user.findFirst({
       where: { email },
     });
 
     if (!data) return res.json("Please Create your account");
 
+    const comparingPass = bcrypt.compare(password, data.password);
+
+    if (!comparingPass)
+      return res
+        .status(400)
+        .json("Your Password is incorrect! Please recheck.");
+
+    // Creating jwt token
+
+    const generatedJwtToken = jwt.sign(
+      {
+        id: data.id,
+        email: data.email,
+        username: data.username,
+      },
+      process.env.JWT_SECRET_TOKEN!,
+      { expiresIn: "1h" }
+    );
+
     console.log("LoggedIn Successfully: ", data);
 
-    return res.status(200).json(data);
+    return res
+      .status(200)
+      .cookie("jwtToken", generatedJwtToken, { httpOnly: true, secure: true })
+      .json({ user: data, generatedJwtToken });
   } catch (error: any) {
     throw new Error(error);
   }
