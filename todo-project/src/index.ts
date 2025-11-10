@@ -1,4 +1,7 @@
+import * as dotenv from "dotenv";
+dotenv.config();
 import express from "express";
+import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes";
 import todoRouter from "./routes/todo.routes";
 const app = express();
@@ -15,8 +18,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 //  is used to serve static files (like CSS, images, JS) from a folder
 app.use(express.static("public"));
 
-import * as dotenv from "dotenv";
-dotenv.config();
+app.use(cookieParser());
 
 // TODO: Router
 
