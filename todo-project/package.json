@@ -8,10 +8,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "generate": "npx prisma generate"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "dotenv": "^17.2.3",
     "nodemon": "^3.1.10",
     "typescript": "^5.9.3"
@@ -19,7 +23,10 @@
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "@types/node": "^24.10.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "prisma": "^6.19.0",
     "ts-node": "^10.9.2"
   }
